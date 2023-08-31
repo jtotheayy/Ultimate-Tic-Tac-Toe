@@ -1,7 +1,3 @@
-import javax.swing.JButton;
-import java.util.Scanner;
-
-
 
 public class Board {
     String symbol = "";
@@ -11,7 +7,9 @@ public class Board {
     String PlayerX = "X";
     String PlayerO = "O";
 
-    public static Boolean checkWinner(Board boardNum) {
+
+    public static Boolean checkWinner(Board boardNum, String currentPlayer) {
+        String playerWinCondition = currentPlayer + currentPlayer + currentPlayer;
         Board[][] thisBoard = boardNum.getBoard();
         String cases[] = new String[8];
         cases[0] = thisBoard[0][0].getSym() + thisBoard[0][1].getSym() + thisBoard[0][2].getSym();
@@ -25,12 +23,41 @@ public class Board {
 
 
         for (int i = 0; i < 8; i++) {
-            if (cases[i].equals("XXX") || cases[i].equals("OOO")) {
+            if (cases[i].equals(playerWinCondition)) {
                 return true;
             }
         }
         return false;
 
+    }
+    public static Boolean checkTie(Board boardNum){
+        Board[][] thisBoard = boardNum.getBoard();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if(!(thisBoard[i][j].getSym().equals("X") || thisBoard[i][j].getSym().equals("O") )){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public int[] availableMoves(){
+        int[] openSpots = new int[9];
+        Board[][] thisBoard = this.getBoard();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if(!(thisBoard[i][j].getSym().equals("X") || thisBoard[i][j].getSym().equals("O") )){
+                    int openSpot =  i * 3 + j;
+                    openSpots[openSpot] = 0;
+                }
+                else{
+                    int openSpot =  i * 3 + j;
+                    openSpots[openSpot] = 1;
+                }
+            }
+        }
+        return openSpots;
     }
 //Set the symbol "X" or "O" on the board's square
     public void setSym(String i) {
@@ -52,8 +79,9 @@ public class Board {
     }
 
     public Board getBoard(int num) {
-        int row = (num - 1) / 3;
-        int col = (num - 1) % 3;
+        int row = (num) / 3;
+        int col = (num) % 3;
+
         return this.board[row][col];
     }
 
@@ -76,7 +104,6 @@ public class Board {
                 System.out.println("_______________________________");
 
             }
-            // Move to the next row
         }
 
     }
@@ -135,17 +162,20 @@ public class Board {
         int focusedBoard = -1;
         try {
             focusedBoard = Integer.parseInt(Focus);
-            System.out.println("Can only place a marker on board: " + focusedBoard);
 
         } catch (Exception e) {
             if (Focus.equals("A")) {
                 System.out.println("All boards are available to place a marker on :)");
             }
         }
+
         if (board == focusedBoard || Focus.equals("A")) {
 
-            int boardNumber = board + 1;
-            int boxNumber = row * 3 + col + 1;
+            int boardNumber = board;
+            int boxNumber = row * 3 + col;
+            
+            if(!Focus.equals("A")){
+            System.out.println("Next turn must be in box: " + boxNumber);}
 
             Board targetBoard = tttBoard.getBoard(boardNumber);
 
@@ -155,9 +185,10 @@ public class Board {
                     targetBox.setSym(currentPlayer);
                     //printBoard(tttBoard);
 
-                    if (checkWinner(targetBoard)) {
+                    if (checkWinner(targetBoard, currentPlayer)) {
                         System.out.println(currentPlayer + "WINS!!! board: " + targetBoard);
                     }
+
                     return true;
 
                 } else {
@@ -165,13 +196,15 @@ public class Board {
                     return false;
                 }
             } else {
-                System.out.println("Invalid board number. Try again.");
+                System.out.println("Invalid board number. Try again. 1");
                 return false;
             }
         } else {
-            System.out.println("Invalid board number. Try again.");
+            System.out.println("Invalid board number. Try again. 2");
             return false;
         }
+
+        
     }
 
 

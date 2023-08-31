@@ -1,12 +1,12 @@
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.Scanner;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+
+import java.util.Random;
 
 //Created By Jay Santamaria
 //Ultimate Tic Tac Toe Game
@@ -20,7 +20,7 @@ import javax.swing.border.Border;
  * and win the game.
  * Good Luck
  */
-public class UltTTT extends Board {
+public class UltTTT extends Board{
     static String currentPlayer = "X";
 
     //A, 1, 2, 3, 4, 5, 6, 7, 8, 9
@@ -71,7 +71,9 @@ public class UltTTT extends Board {
                 }
             }
             focusedBoard = "A";
-        } else {
+        } 
+        else if(focus == -100){}
+        else {
             JPanel focusPanel = (JPanel) wholeBoard.getContentPane().getComponent(focus);
             focusPanel.setBorder(focusBorder);
         }
@@ -165,9 +167,8 @@ public class UltTTT extends Board {
 
 
         JFrame wholeBoard = new JFrame("Ultimate Tic-Tac-Toe    Current Player: X");
-        wholeBoard.setFocusable(true); // Add this line to make the frame receive keyboard input
+        wholeBoard.setFocusable(true); 
         wholeBoard.setSize(1200, 1500);
-        //wholeBoard.setLayout(null);
         wholeBoard.setVisible(true);
 
 
@@ -200,27 +201,26 @@ public class UltTTT extends Board {
                     b.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
 
-                            if (!checkWinner(tttBoard.getBoard(boardNumber + 1))) {
+                            if (!checkWinner(tttBoard.getBoard(boardNumber), currentPlayer)) {
 
 
                                 System.out.println("Row: " + row + " Col: " + col + " in Board " + boardNumber);
 
                                 if (playGame(boardNumber, row, col, currentPlayer, tttBoard, focusedBoard)) {
                                     markBoard(boardNumber, row, col, wholeBoard);
-                                    if (wonBoards[boardNumber] == false && !checkWinner(tttBoard.getBoard(row * 3 + col+ 1))) {
+                                    if (wonBoards[boardNumber] == false && !checkWinner(tttBoard.getBoard(row * 3 + col), currentPlayer)) {
                                         changeFocus(row * 3 + col, wholeBoard);
                                     } else {
                                         changeFocus(-1, wholeBoard);
                                     }
-                                    if (checkWinner(tttBoard.getBoard(boardNumber + 1))) {
+                                    
+                                    if (checkWinner(tttBoard.getBoard(boardNumber), currentPlayer)) {
                                         wonBoards[boardNumber] = true;
 
 
-                                        System.out.println(boardNumber);
                                         final int row = (boardNumber) / 3;
                                         final int col = (boardNumber) % 3;
-                                        System.out.print(row);
-                                        System.out.print(col);
+
 
                                         Board[][] wholeBoardSymbol = wholeBoardCheck.getBoard();
 
@@ -233,28 +233,90 @@ public class UltTTT extends Board {
                                         wonPanel.setBorder(wonBorder);
 
                                     }
+                                    if(checkTie(tttBoard.getBoard(boardNumber))){
+                                        wonBoards[boardNumber] = true;
+                                    }
 
-                                         if(checkWinner(wholeBoardCheck)){
+                                         if(checkWinner(wholeBoardCheck, "X")){
 
                                             System.out.println(currentPlayer + " WINS THE GAME");
                                             wholeBoard.setTitle("Ultimate Tic-Tac-Toe    "+currentPlayer+" WINS THE GAME!");
-                                             changePlayer();
+                                            changeFocus(-100, wholeBoard);
+                                            changePlayer();
                                         }
                                         else{
                                     changePlayer();
                                     wholeBoard.setTitle("Ultimate Tic-Tac-Toe    Current Player: "+currentPlayer);
                                         }
 
+                                        //Generate computer turn
+                                         final int boardNumber = row * 3 + col;
+                                         
+                                        if (currentPlayer.equals("O")) {
 
 
+                                            int computerBoard = boardNumber;
+                                            Random rand = new Random();
 
-                                };
+                                            if(wonBoards[computerBoard] == true){
+                                                while(wonBoards[computerBoard] == true){
+                                                    computerBoard = rand.nextInt(wonBoards.length);
+                                                }
+                                            }
+
+                                            else{computerBoard = boardNumber;}
+
+                                           int computerMove = ComputerOpp.findBestMove(tttBoard, computerBoard);
+                                            final int compRow = computerMove / 3;
+                                            final int compCol = computerMove % 3;
+                                            
+                                            System.out.println("Computer move: " + computerMove + " " + compRow + " " + compCol);
+                                            // Make the computer's move
+                                            if (playGame(computerBoard, compRow, compCol, currentPlayer, tttBoard, focusedBoard)) {
+                                                markBoard(computerBoard, compRow, compCol, wholeBoard);
+                                                if (wonBoards[computerBoard] == false && !checkWinner(tttBoard.getBoard(compRow * 3 + compCol), currentPlayer)) {
+                                                    changeFocus(compRow * 3 + compCol, wholeBoard);
+                                                } else {
+                                                    changeFocus(-1, wholeBoard);
+                                                }
+                                                
+                                                if (checkWinner(tttBoard.getBoard(computerBoard), currentPlayer)) {
+                                                    wonBoards[computerBoard] = true;
+                                                    markWonBoard(computerBoard, wholeBoard);
+
+                                                    Board[][] wholeBoardSymbol = wholeBoardCheck.getBoard();
+                                                    wholeBoardSymbol[row][col].setSym(currentPlayer);
+
+                                                    JPanel wonPanel = (JPanel) wholeBoard.getContentPane().getComponent(computerBoard);
+                                                    wonPanel.setBorder(wonBorder);
+
+                                                } else if (checkTie(tttBoard.getBoard(computerBoard))) {
+                                                    wonBoards[computerBoard] = true;
+                                                }
+                                                                                        
+                                            }
+                                        }
+                                        
+                            }
 
 
                             } else {
                                 System.out.println("Board is won, cannot play in this board");
                             }
+                            
 
+                            printBoard(tttBoard);
+                            System.out.println(currentPlayer);
+                            if (checkWinner(wholeBoardCheck, "O")) {
+                                                    System.out.println(currentPlayer + " WINS THE GAME");
+                                                    wholeBoard.setTitle("Ultimate Tic-Tac-Toe    " + currentPlayer + " WINS THE GAME!");
+                                                    changeFocus(-100, wholeBoard);
+
+                                                    changePlayer();
+                                                } else {
+                                                    changePlayer();
+                                                    wholeBoard.setTitle("Ultimate Tic-Tac-Toe    Current Player: " + currentPlayer);
+                                                }
                         }
                     });
 
